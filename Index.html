@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Employee Notification</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Send Employee Notification</h1>
+    <form id="notify-form">
+      <label for="sender">Sender Number:</label>
+      <input type="tel" id="sender" name="sender" required placeholder="+9665XXXXXXXX" />
+
+      <label for="employee">Select Employee:</label>
+      <select id="employee" name="employee" required>
+        <option value="" disabled selected>Select a name</option>
+        <option data-phone="+966501234567">Ahmed</option>
+        <option data-phone="+966501112233">Sarah</option>
+        <option data-phone="+966502223344">Khaled</option>
+      </select>
+
+      <label for="method">Send Method:</label>
+      <select id="method" name="method" required>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="sms">SMS</option>
+      </select>
+
+      <label for="alert">Alert Message:</label>
+      <textarea id="alert" name="alert" required placeholder="Type the alert..."></textarea>
+
+      <label for="note">Additional Note:</label>
+      <textarea id="note" name="note" placeholder="Optional note..."></textarea>
+
+      <button type="submit">Send & Save PDF</button>
+    </form>
+
+    <div class="social-icons">
+      <a href="https://www.linkedin.com" target="_blank"><i class="fab fa-linkedin"></i></a>
+      <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+      <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
+      <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://tiktok.com" target="_blank"><i class="fab fa-tiktok"></i></a>
+    </div>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    document.getElementById("notify-form").onsubmit = (e) => {
+      e.preventDefault();
+
+      const employeeSelect = document.getElementById("employee");
+      const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
+      const name = selectedOption.text;
+      const phone = selectedOption.getAttribute("data-phone");
+      const method = document.getElementById("method").value;
+      const message = document.getElementById("alert").value;
+      const note = document.getElementById("note").value;
+      const sender = document.getElementById("sender").value;
+      const timestamp = new Date().toLocaleString();
+
+      const fullMessage = `${message}\n\nNote: ${note}`;
+      const encodedMessage = encodeURIComponent(fullMessage);
+
+      if (method === "whatsapp") {
+        window.open(`https://wa.me/${phone.replace('+', '')}?text=${encodedMessage}`, "_blank");
+      } else {
+        window.open(`sms:${phone}?&body=${encodedMessage}`, "_blank");
+      }
+
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+
+      doc.text(`Sent Date: ${timestamp}`, 20, 20);
+      doc.text(`Employee Name: ${name}`, 20, 30);
+      doc.text(`Phone: ${phone}`, 20, 40);
+      doc.text(`Sender: ${sender}`, 20, 50);
+      doc.text("Alert Message:", 20, 60);
+      doc.text(doc.splitTextToSize(message, 180), 20, 70);
+      if (note.trim()) {
+        doc.text("Additional Note:", 20, 100);
+        doc.text(doc.splitTextToSize(note, 180), 20, 110);
+      }
+
+      doc.save(`Notification_${name}.pdf`);
+    };
+  </script>
+</body>
+</html>
